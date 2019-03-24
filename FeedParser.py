@@ -13,19 +13,25 @@ feed_url = sys.argv[1]
 output = sys.argv[2]
 
 parsed_feed = feedparser.parse(feed_url)
-first_entry = parsed_feed.entries[0]
 
-content_value = first_entry.content[0].value
-pattern = "https://i.redd.it/.{13}.jpg"
-regex = re.compile(pattern)
+image_url = ""
+for entry in parsed_feed.entries:
+    content_value = entry.content[0].value
+    pattern = "https://i.redd.it/.{13}.jpg"
+    regex = re.compile(pattern)
+    try:
+        image_url = regex.findall(content_value)[0]
+        break
+    except:
+        continue
 
-image_url = regex.findall(content_value)[0]
-filename = strftime("%Y-%m-%d", first_entry.updated_parsed) + ".jpg"
-filename_path = output + "\\" + filename
+date = strftime("%Y-%m-%d", entry.updated_parsed)
+title = entry.title
+filename = output + "\\" + date + "_" + title + ".jpg"
 
-print(filename_path + " | " + image_url)
+print(filename + " | " + image_url)
 
-with open(filename_path, 'wb') as handle:
+with open(filename, 'wb') as handle:
     response = requests.get(image_url, stream=True)
 
     if not response.ok:
